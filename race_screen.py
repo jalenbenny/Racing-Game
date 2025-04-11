@@ -1,7 +1,7 @@
 import pygame
 import random
 #from utils import Chariot, ShieldPowerUp
-from utils import Chariot, AIOpponent, ShieldPowerUp, SpeedBoost, PowerUp
+from utils import Chariot, AIOpponent, ShieldPowerUp, SpeedBoost, PowerUp, Arrow
 #from track_data import TRACK_DETAILS
 
 WHITE, RED, BLUE = (255, 255, 255), (255, 0, 0), (0, 0, 255)
@@ -51,6 +51,7 @@ class RaceScreen:
         self.game_mode = game_mode  # Store the mode
 
         self.falling_objects = []  # Objects in survival mode
+        self.arrows = []  # Add this line to store arrows
 
         """
         # Apply chariot abilities
@@ -110,6 +111,45 @@ class RaceScreen:
             pygame.draw.rect(self.screen, RED, obj)
             if obj.y > 850:
                 self.falling_objects.remove(obj)
+            elif self.player.rect.colliderect(obj):
+                if not self.player.shield_active:
+                    self.player.health -= 10
+                self.falling_objects.remove(obj)
+
+    def spawn_arrows(self):
+        """Spawn arrows from different sides in survival mode."""
+        if random.random() < 0.01:  # 1% chance per frame
+            # Randomly choose a direction
+            direction = random.choice(["right", "left", "up", "down"])
+            
+            if direction == "right":
+                x, y = 0, random.randint(100, 700)
+            elif direction == "left":
+                x, y = 1000, random.randint(100, 700)
+            elif direction == "up":
+                x, y = random.randint(100, 900), 800
+            elif direction == "down":
+                x, y = random.randint(100, 900), 0
+                
+            # Create and add the arrow
+            arrow = Arrow(x, y, direction)
+            self.arrows.append(arrow)
+
+    def move_arrows(self):
+        """Move arrows and check for collisions."""
+        for arrow in self.arrows[:]:
+            arrow.move()
+            arrow.draw(self.screen)
+            
+            # Check for collision with player
+            if self.player.rect.colliderect(arrow.rect):
+                if not self.player.shield_active:
+                    self.player.health -= 15  # More damage than regular obstacles
+                self.arrows.remove(arrow)
+            
+            # Remove arrows that are off-screen
+            elif arrow.is_off_screen(1000, 800):
+                self.arrows.remove(arrow)
 
 
     def draw_exit_button(self):
@@ -219,6 +259,8 @@ class RaceScreen:
             if self.game_mode == "survival":
                 self.spawn_falling_objects()
                 self.move_falling_objects()
+                self.spawn_arrows()  # Add arrows in survival mode
+                self.move_arrows()
                 
                 
                 
@@ -262,7 +304,3 @@ class RaceScreen:
             pygame.draw.rect(self.screen, (200, 0, 0), self.finish_zone) # new
 
             pygame.display.update()
-
-    
-
-    
