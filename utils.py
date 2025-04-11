@@ -1,3 +1,4 @@
+
 import pygame
 import random
 import math
@@ -190,35 +191,59 @@ class SpeedBoost(PowerUp):
     def apply_effect(self, chariot):
         chariot.activate_speed_boost()
 
-
-'''
-class ShieldPowerUp:
-    def __init__(self, x, y):
+class Arrow:
+    def __init__(self, x, y, direction="right"):
         self.x, self.y = x, y
-        self.image = pygame.Surface((40, 40))
-        self.image.fill((0, 0, 255))
-        self.rect = self.image.get_rect(topleft=(x, y))
-
-    def apply_effect(self, player): # new
-        player.activate_shield()
-
-    def draw(self, screen):
-        screen.blit(self.image, (self.x, self.y))
+        self.direction = direction  # "right", "left", "up", "down"
+        self.speed = 7
+        self.width = 40
+        self.height = 10
         
-
-
-class SpeedBoost:
-    def __init__(self, x, y):
-        #self.image = pygame.image.load("assets/poweruppixel.png")
-        #self.image = pygame.transform.scale(self.image, (40, 40))
-        #self.rect = self.image.get_rect(topleft=(x, y))
-        self.rect = pygame.Rect(x, y, 40, 40)
-        self.image = pygame.Surface((40, 40))
-        self.image.fill((255, 255, 0))
-
-    def apply_effect(self, player):
-        player.activate_speed_boost()
-
+        if direction in ["up", "down"]:
+            self.width, self.height = self.height, self.width  # Swap dimensions for vertical arrows
+        
+        self.rect = pygame.Rect(x, y, self.width, self.height)
+        
+    def move(self):
+        if self.direction == "right":
+            self.x += self.speed
+        elif self.direction == "left":
+            self.x -= self.speed
+        elif self.direction == "up":
+            self.y -= self.speed
+        elif self.direction == "down":
+            self.y += self.speed
+            
+        self.rect.topleft = (self.x, self.y)
+        
     def draw(self, screen):
-        screen.blit(self.image, self.rect.topleft)
-        '''
+        # Draw arrow body
+        color = (255, 0, 0)  # Red color for arrows
+        pygame.draw.rect(screen, color, self.rect)
+        
+        # Draw arrowhead
+        if self.direction == "right":
+            points = [(self.x + self.width, self.y + self.height//2),
+                      (self.x + self.width - 10, self.y),
+                      (self.x + self.width - 10, self.y + self.height)]
+        elif self.direction == "left":
+            points = [(self.x, self.y + self.height//2),
+                      (self.x + 10, self.y),
+                      (self.x + 10, self.y + self.height)]
+        elif self.direction == "up":
+            points = [(self.x + self.width//2, self.y),
+                      (self.x, self.y + 10),
+                      (self.x + self.width, self.y + 10)]
+        elif self.direction == "down":
+            points = [(self.x + self.width//2, self.y + self.height),
+                      (self.x, self.y + self.height - 10),
+                      (self.x + self.width, self.y + self.height - 10)]
+                      
+        pygame.draw.polygon(screen, color, points)
+    
+    def is_off_screen(self, width, height):
+        return (self.x < -50 or self.x > width + 50 or 
+                self.y < -50 or self.y > height + 50)
+
+
+q
